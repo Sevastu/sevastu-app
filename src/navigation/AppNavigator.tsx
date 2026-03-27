@@ -11,16 +11,21 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { WorkerProfileScreen } from '../screens/WorkerProfileScreen';
 import { ChatScreen } from '../screens/ChatScreen';
 import { BookingScreen } from '../screens/BookingScreen';
-import { COLORS } from '../constants/theme';
-import { View, Text } from 'react-native';
+import { LoginScreen } from '../screens/LoginScreen';
+import { VerifyOtpScreen } from '../screens/VerifyOtpScreen';
+import { SetPasswordScreen } from '../screens/SetPasswordScreen';
+import { COLORS } from '../theme';
+import { View } from 'react-native';
+import { Text } from '../components/ui/Typography';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Temporary Chat List screen for bottom tab
 const ChatListScreen = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Chat List (Messages will appear here)</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background }}>
+        <MessageCircle size={64} color={COLORS.textMuted} />
+        <Text variant="h3" style={{ marginTop: 20 }}>Your Messages</Text>
+        <Text variant="bodyMedium" color={COLORS.textMuted}>Book a service to start chatting with professionals</Text>
     </View>
 );
 
@@ -29,20 +34,28 @@ function BottomTabs() {
         <Tab.Navigator
             screenOptions={{
                 tabBarActiveTintColor: COLORS.primary,
-                tabBarInactiveTintColor: COLORS.gray,
+                tabBarInactiveTintColor: COLORS.textMuted,
                 headerShown: false,
                 tabBarStyle: {
                     borderTopWidth: 1,
                     borderTopColor: COLORS.border,
                     elevation: 0,
+                    height: 60,
+                    paddingBottom: 8,
+                    paddingTop: 8,
+                    backgroundColor: COLORS.white,
                 },
+                tabBarLabelStyle: {
+                    fontSize: 11,
+                    fontWeight: '600',
+                }
             }}
         >
             <Tab.Screen
                 name="HomeTab"
                 component={HomeScreen}
                 options={{
-                    title: 'Home',
+                    title: 'Explore',
                     tabBarIcon: ({ color, size }) => <Home color={color} size={size} />
                 }}
             />
@@ -85,22 +98,25 @@ function BottomTabs() {
 export function AppNavigator() {
     return (
         <NavigationContainer>
-            <Stack.Navigator>
+            <Stack.Navigator initialRouteName="Login">
+                <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="SetPassword" component={SetPasswordScreen} options={{ title: 'Security', headerShadowVisible: false }} />
                 <Stack.Screen name="Main" component={BottomTabs} options={{ headerShown: false }} />
                 <Stack.Screen
                     name="WorkerProfile"
                     component={WorkerProfileScreen}
-                    options={{ headerShown: true, title: 'Provider Profile' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Chat"
                     component={ChatScreen}
-                    options={{ headerShown: true, title: 'Chat' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Booking"
                     component={BookingScreen}
-                    options={{ headerShown: true, title: 'Book Service' }}
+                    options={{ headerShown: true, title: 'Book Service', headerShadowVisible: false }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

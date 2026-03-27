@@ -6,9 +6,12 @@ export interface Worker {
     rating: number;
     price: number;
     category: string;
-    skills: string[];
-    completedJobs: number;
-    reviews: any[];
+    skills?: string[];
+    completedJobs?: number;
+    reviews?: any[];
+    distance?: string;
+    isAvailable?: boolean;
+    avatar?: string;
 }
 
 const getWorkersNearby = async (): Promise<Worker[]> => {

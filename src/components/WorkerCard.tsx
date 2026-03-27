@@ -1,29 +1,20 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import { Star } from 'lucide-react-native';
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
-import { Button } from './Button';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { Star, MapPin } from 'lucide-react-native';
+import { COLORS, SPACING, BORDER_RADIUS } from '../theme';
+import { Card } from './ui/Card';
+import { Avatar } from './ui/Avatar';
+import { Text } from './ui/Typography';
+import { Button } from './ui/Button';
 
-interface Worker {
-  id: string;
-  name: string;
-  rating: number;
-  price: number;
-  category: string;
-  distance?: string;
-  isAvailable?: boolean;
-}
+import { workerService, Worker } from '../services/workerService';
 
 interface WorkerCardProps {
   worker: Worker;
-  onChat: () => void;
-  onBook: () => void;
+  onChat?: () => void;
+  onBook?: () => void;
   onPress?: () => void;
+  horizontal?: boolean;
 }
 
 export const WorkerCard: React.FC<WorkerCardProps> = ({
@@ -31,162 +22,138 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
   onChat,
   onBook,
   onPress,
+  horizontal = false,
 }) => {
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
-      <View style={styles.container}>
-        
-        {/* HEADER */}
+    <Card
+      onPress={onPress}
+      variant="outline"
+      style={[
+        styles.container,
+        horizontal ? { width: 280, marginRight: 16 } : {}
+      ]}
+      padding="none"
+    >
+      <View style={styles.paddingContainer}>
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {worker.name.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-
-          <View style={styles.info}>
-            <Text style={styles.name}>{worker.name}</Text>
-            <Text style={styles.category}>{worker.category}</Text>
-
-            {/* Extra info */}
-            <Text style={styles.meta}>
-              📍 {worker.distance || 'Nearby'}
-              {worker.isAvailable && ' • 🟢 Available'}
-            </Text>
-          </View>
-
-          <View style={styles.ratingContainer}>
-            <Star size={14} color="#FBBF24" fill="#FBBF24" />
-            <Text style={styles.rating}>{worker.rating}</Text>
+          <Avatar name={worker.name} source={worker.avatar} size={50} />
+          <View style={styles.headerInfo}>
+            <View style={styles.nameRow}>
+              <Text variant="h4" style={styles.name}>{worker.name}</Text>
+              <View style={styles.ratingBox}>
+                <Star size={12} color={COLORS.warning} fill={COLORS.warning} />
+                <Text variant="bodySmall" style={styles.ratingText}>{worker.rating}</Text>
+              </View>
+            </View>
+            <Text variant="bodySmall" color={COLORS.textMuted}>{worker.category}</Text>
           </View>
         </View>
 
-        {/* PRICE */}
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceLabel}>Starting from</Text>
-          <Text style={styles.price}>₹{worker.price}</Text>
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <MapPin size={14} color={COLORS.textMuted} />
+            <Text variant="bodySmall" color={COLORS.textMuted} style={styles.metaText}>
+              {worker.distance || '1.2 km'}
+            </Text>
+          </View>
+          <View style={styles.priceContainer}>
+            <Text variant="bodySmall" color={COLORS.textMuted}>Starting from </Text>
+            <Text variant="bodyMedium" color={COLORS.primary} style={styles.priceText}>
+              ₹{worker.price}
+            </Text>
+          </View>
         </View>
 
-        {/* ACTIONS */}
         <View style={styles.actions}>
           <Button
             title="Chat"
             variant="outline"
+            size="sm"
             onPress={onChat}
-            style={styles.actionButton}
+            style={styles.actionBtn}
           />
-
-          <View style={{ width: SPACING.sm }} />
-
+          <View style={{ width: 12 }} />
           <Button
-            title="Book"
+            title="Book Now"
             variant="primary"
+            size="sm"
             onPress={onBook}
-            style={styles.actionButton}
+            style={styles.actionBtn}
           />
         </View>
       </View>
-    </TouchableOpacity>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    marginRight: SPACING.md,
-    width: 260,
-    ...SHADOWS.light,
+    marginBottom: 16,
+    overflow: 'hidden',
+    backgroundColor: COLORS.card,
   },
-
+  paddingContainer: {
+    padding: 16,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 12,
   },
-
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.primary + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.md,
-  },
-
-  avatarText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-
-  info: {
+  headerInfo: {
     flex: 1,
+    marginLeft: 12,
   },
-
-  name: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-
-  category: {
-    fontSize: 13,
-    color: COLORS.gray,
-  },
-
-  meta: {
-    fontSize: 12,
-    color: COLORS.gray,
-    marginTop: 2,
-  },
-
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: BORDER_RADIUS.sm,
-  },
-
-  rating: {
-    marginLeft: 4,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#D97706',
-  },
-
-  priceContainer: {
+  nameRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: SPACING.sm,
-    paddingTop: SPACING.sm,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
-
-  priceLabel: {
-    color: COLORS.gray,
-    fontSize: 12,
-  },
-
-  price: {
+  name: {
     fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.primary,
   },
-
+  ratingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.warning + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: BORDER_RADIUS.sm,
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontWeight: '700',
+    color: COLORS.warning,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed',
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaText: {
+    marginLeft: 4,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  priceText: {
+    fontWeight: '800',
+  },
   actions: {
     flexDirection: 'row',
-    marginTop: SPACING.sm,
   },
-
-  actionButton: {
+  actionBtn: {
     flex: 1,
-    paddingVertical: 8,
   },
 });

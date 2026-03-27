@@ -1,190 +1,198 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
-import { Calendar, Clock } from 'lucide-react-native';
-import { Button } from '../components/Button';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
+  StatusBar as RNStatusBar,
+} from 'react-native';
+import { Search, Filter, Calendar } from 'lucide-react-native';
+import { COLORS, SPACING } from '../theme';
+import { Text } from '../components/ui/Typography';
+import { JobCard, Booking } from '../components/JobCard';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { jobService, Job } from '../services/jobService';
 
 export const BookingsScreen = () => {
-    const [jobs, setJobs] = useState<Job[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        fetchJobs();
-    }, []);
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
-    const fetchJobs = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await jobService.getMyJobs();
-            setJobs(data);
-        } catch (err) {
-            setError('Failed to fetch your bookings.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await jobService.getMyJobs();
+      
+      // Map API data to our Booking type for UI consistency
+      const mappedJobs: Booking[] = data.map((job: any) => ({
+        id: job.id,
+        serviceName: job.service || 'General Service',
+        workerName: job.workerName || 'Assigned Professional',
+        date: job.date || 'TBD',
+        time: job.time || 'Morning',
+        status: (job.status === 'ongoing' ? 'accepted' : job.status) as any,
+        price: job.price || 0,
+      }));
+      
+      setJobs(mappedJobs);
+    } catch (err) {
+      setError('Failed to fetch your bookings.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (loading) return <View style={styles.center}><ActivityIndicator color={COLORS.primary} /></View>;
+  const filteredJobs = jobs.filter(job =>
+    job.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.workerName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>My Bookings</Text>
-            </View>
-
-            <FlatList
-                data={jobs}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.listContainer}
-                renderItem={({ item }) => (
-                    <View style={styles.bookingCard}>
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.serviceName}>{item.service}</Text>
-                            <View style={[
-                                styles.statusBadge,
-                                item.status === 'completed' ? styles.statusCompleted : styles.statusOngoing
-                            ]}>
-                                <Text style={[
-                                    styles.statusText,
-                                    item.status === 'completed' ? styles.statusTextCompleted : styles.statusTextOngoing
-                                ]}>
-                                    {item.status.toUpperCase()}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <Text style={styles.workerName}>Provider: {item.workerName}</Text>
-
-                        <View style={styles.dateTimeContainer}>
-                            <View style={styles.dateTime}>
-                                <Calendar size={16} color={COLORS.gray} style={styles.icon} />
-                                <Text style={styles.dateTimeText}>{item.date}</Text>
-                            </View>
-                            <View style={styles.dateTime}>
-                                <Clock size={16} color={COLORS.gray} style={styles.icon} />
-                                <Text style={styles.dateTimeText}>{item.time}</Text>
-                            </View>
-                        </View>
-
-                        {item.status === 'ongoing' && (
-                            <View style={styles.actions}>
-                                <Button title="Reschedule" variant="outline" style={styles.actionBtn} />
-                                <View style={{ width: SPACING.sm }} />
-                                <Button title="Cancel" variant="outline" style={styles.actionBtn} />
-                            </View>
-                        )}
-                    </View>
-                )}
-                ListEmptyComponent={() => (
-                    <View style={{ marginTop: 50, alignItems: 'center' }}>
-                        <Text style={{ color: COLORS.gray }}>No bookings found.</Text>
-                        <Button title="Find Services" onPress={() => { }} style={{ marginTop: 20 }} />
-                    </View>
-                )}
-                onRefresh={fetchJobs}
-                refreshing={loading}
-            />
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text variant="h1">My Bookings</Text>
+          <Text variant="bodyMedium" color={COLORS.textMuted}>Manage your service requests</Text>
         </View>
-    );
+
+        <View style={styles.filterSection}>
+          <Input
+            placeholder="Search bookings..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            leftIcon={<Search size={20} color={COLORS.textMuted} />}
+            containerStyle={styles.searchBar}
+            style={styles.input}
+          />
+          <Button
+            title=""
+            variant="outline"
+            style={styles.filterBtn}
+            leftIcon={<Filter size={20} color={COLORS.text} />}
+          />
+        </View>
+
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        ) : (
+          <FlatList
+            data={filteredJobs}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <JobCard
+                booking={item}
+                onPress={() => {}}
+              />
+            )}
+            ListEmptyComponent={() => (
+              <View style={styles.emptyContainer}>
+                <View style={styles.emptyIcon}>
+                  <Calendar size={48} color={COLORS.textMuted} />
+                </View>
+                <Text variant="h3" align="center" style={styles.emptyTitle}>No Bookings Found</Text>
+                <Text variant="bodyMedium" color={COLORS.textMuted} align="center" style={styles.emptySubtitle}>
+                  You haven't booked any services yet. Find a professional to get started.
+                </Text>
+                <Button
+                  title="Explore Services"
+                  onPress={() => {}}
+                  style={styles.exploreBtn}
+                />
+              </View>
+            )}
+            onRefresh={fetchJobs}
+            refreshing={loading}
+          />
+        )}
+      </View>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background,
-    },
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    header: {
-        paddingTop: 40,
-        paddingHorizontal: SPACING.md,
-        paddingBottom: SPACING.md,
-        backgroundColor: COLORS.white,
-        borderBottomWidth: 1,
-        borderBottomColor: COLORS.border,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: COLORS.text,
-    },
-    listContainer: {
-        padding: SPACING.md,
-    },
-    bookingCard: {
-        backgroundColor: COLORS.white,
-        borderRadius: BORDER_RADIUS.md,
-        padding: SPACING.md,
-        marginBottom: SPACING.md,
-        ...SHADOWS.light,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: SPACING.sm,
-    },
-    serviceName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: COLORS.text,
-    },
-    statusBadge: {
-        paddingHorizontal: SPACING.sm,
-        paddingVertical: 4,
-        borderRadius: BORDER_RADIUS.sm,
-    },
-    statusOngoing: {
-        backgroundColor: '#FEF3C7',
-    },
-    statusCompleted: {
-        backgroundColor: '#D1FAE5',
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    statusTextOngoing: {
-        color: '#D97706',
-    },
-    statusTextCompleted: {
-        color: '#059669',
-    },
-    workerName: {
-        fontSize: 16,
-        color: COLORS.text,
-        marginBottom: SPACING.sm,
-    },
-    dateTimeContainer: {
-        flexDirection: 'row',
-        marginBottom: SPACING.md,
-    },
-    dateTime: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: SPACING.lg,
-    },
-    icon: {
-        marginRight: 4,
-    },
-    dateTimeText: {
-        color: COLORS.gray,
-        fontSize: 14,
-    },
-    actions: {
-        flexDirection: 'row',
-        borderTopWidth: 1,
-        borderTopColor: COLORS.border,
-        paddingTop: SPACING.md,
-    },
-    actionBtn: {
-        flex: 1,
-        paddingVertical: SPACING.sm,
-    },
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    padding: 24,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  filterSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    zIndex: 1,
+  },
+  searchBar: {
+    flex: 1,
+    marginBottom: 0,
+    marginRight: 12,
+  },
+  input: {
+    height: 48,
+  },
+  filterBtn: {
+    width: 48,
+    height: 48,
+    paddingHorizontal: 0,
+  },
+  listContainer: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  emptyTitle: {
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  exploreBtn: {
+    paddingHorizontal: 32,
+  },
 });

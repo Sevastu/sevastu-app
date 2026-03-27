@@ -5,13 +5,13 @@ import { COLORS, SPACING, BORDER_RADIUS } from '../constants/theme';
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
     variant?: 'primary' | 'outline' | 'ghost';
-    isLoading?: boolean;
+    loading?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
     title,
     variant = 'primary',
-    isLoading = false,
+    loading = false,
     style,
     ...props
 }) => {
@@ -26,10 +26,10 @@ export const Button: React.FC<ButtonProps> = ({
                 isOutline && styles.outlineButton,
                 style,
             ]}
-            disabled={isLoading || props.disabled}
+            disabled={loading || props.disabled}
             {...props}
         >
-            {isLoading ? (
+            {loading ? (
                 <ActivityIndicator color={isPrimary ? COLORS.white : COLORS.primary} />
             ) : (
                 <Text

@@ -1,212 +1,297 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
-import { MapPin, Search } from 'lucide-react-native';
-import { COLORS, SPACING, BORDER_RADIUS } from '../constants/theme';
-import { CategoryCard } from '../components/CategoryCard';
-import { WorkerCard } from '../components/WorkerCard';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  StatusBar,
+} from 'react-native';
+import { MapPin, Search, Bell, Zap, Droplets, Home as HomeIcon, Wind } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { COLORS, SPACING } from '../theme';
+import { Text } from '../components/ui/Typography';
+import { Avatar } from '../components/ui/Avatar';
+import { CategoryChip } from '../components/CategoryChip';
+import { WorkerCard } from '../components/WorkerCard';
+import { Skeleton } from '../components/ui/Skeleton';
 import { workerService, Worker } from '../services/workerService';
 
 const CATEGORIES = [
-    { id: '1', name: 'Electrician', iconName: 'zap' },
-    { id: '2', name: 'Plumber', iconName: 'droplet' },
-    { id: '3', name: 'Maid', iconName: 'home' },
-    { id: '4', name: 'AC Repair', iconName: 'wind' },
+  { id: '1', name: 'Electrician', Icon: Zap },
+  { id: '2', name: 'Plumber', Icon: Droplets },
+  { id: '3', name: 'Maid', Icon: HomeIcon },
+  { id: '4', name: 'AC Repair', Icon: Wind },
+  { id: '5', name: 'Painter', Icon: Zap },
+  { id: '6', name: 'Carpenter', Icon: HomeIcon },
 ];
 
 export const HomeScreen = () => {
-    const navigation = useNavigation();
-    const [workers, setWorkers] = useState<Worker[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const navigation = useNavigation();
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState('All');
 
-    useEffect(() => {
-        fetchWorkers();
-    }, []);
+  useEffect(() => {
+    fetchWorkers();
+  }, []);
 
-    const fetchWorkers = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await workerService.getWorkersNearby();
-            setWorkers(data);
-        } catch (err: any) {
-            setError('Failed to fetch nearby workers.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchWorkers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await workerService.getWorkersNearby();
+      setWorkers(data);
+    } catch (err: any) {
+      setError('Failed to fetch nearby workers.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.header}>
-                <View style={styles.locationContainer}>
-                    <MapPin color={COLORS.primary} size={20} />
-                    <Text style={styles.locationText}>Mithapur, Patna</Text>
-                </View>
-                <TouchableOpacity style={styles.profileBtn}>
-                    <Text style={styles.profileBtnText}>U</Text>
-                </TouchableOpacity>
-            </View>
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View>
+        <Text variant="bodySmall" color={COLORS.textMuted}>Current Location</Text>
+        <View style={styles.locationRow}>
+          <MapPin size={16} color={COLORS.primary} fill={COLORS.primary + '20'} />
+          <Text variant="label" style={styles.locationText}>Mithapur, Patna</Text>
+        </View>
+      </View>
+      <View style={styles.headerActions}>
+        <Pressable style={styles.iconBtn}>
+          <Bell size={22} color={COLORS.text} />
+          <View style={styles.badge} />
+        </Pressable>
+        <Pressable onPress={() => (navigation as any).navigate('Profile')}>
+          <Avatar name="User" size={42} />
+        </Pressable>
+      </View>
+    </View>
+  );
 
-            <View style={styles.searchSection}>
-                <Text style={styles.greeting}>Find services</Text>
-                <Text style={styles.subGreeting}>What do you need help with?</Text>
+  const renderSearch = () => (
+    <View style={styles.searchContainer}>
+      <Text variant="h2" style={styles.greeting}>What service do you need today?</Text>
+      <Pressable
+        style={styles.fakeSearch}
+        onPress={() => (navigation as any).navigate('Search')}
+      >
+        <Search size={20} color={COLORS.textMuted} />
+        <Text variant="bodyMedium" color={COLORS.textMuted} style={styles.searchText}>
+          Search for "Electrician"...
+        </Text>
+      </Pressable>
+    </View>
+  );
 
-                <TouchableOpacity
-                    style={styles.fakeSearchBar}
-                    onPress={() => (navigation as any).navigate('SearchTab')}
-                    activeOpacity={0.8}
-                >
-                    <Search color={COLORS.gray} size={20} style={styles.searchIcon} />
-                    <Text style={styles.searchText}>Search for "Plumber"</Text>
-                </TouchableOpacity>
-            </View>
+  const renderCategories = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text variant="h3">Categories</Text>
+        <Pressable>
+          <Text variant="bodySmall" color={COLORS.primary} style={{ fontWeight: '700' }}>See All</Text>
+        </Pressable>
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoriesList}
+      >
+        <CategoryChip
+          label="All"
+          active={activeCategory === 'All'}
+          onPress={() => setActiveCategory('All')}
+        />
+        {CATEGORIES.map((cat) => (
+          <CategoryChip
+            key={cat.id}
+            label={cat.name}
+            Icon={<cat.Icon size={16} color={activeCategory === cat.name ? COLORS.white : COLORS.primary} />}
+            active={activeCategory === cat.name}
+            onPress={() => setActiveCategory(cat.name)}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Categories</Text>
-                <View style={styles.categoriesGrid}>
-                    {CATEGORIES.map((cat) => {
-                        const lucide = require('lucide-react-native');
-                        const Icon = lucide[cat.iconName === 'zap' ? 'Zap' : cat.iconName === 'droplet' ? 'Droplets' : cat.iconName === 'home' ? 'Home' : 'Wind'];
-                        return (
-                            <CategoryCard
-                                key={cat.id}
-                                label={cat.name}
-                                Icon={Icon}
-                                onPress={() => (navigation as any).navigate('SearchTab', { category: cat.name })}
-                            />
-                        );
-                    })}
-                </View>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Available Nearby</Text>
-                {loading ? (
-                    <ActivityIndicator size="large" color={COLORS.primary} style={{ marginVertical: 20 }} />
-                ) : error ? (
-                    <View style={{ alignItems: 'center', marginVertical: 20 }}>
-                        <Text style={{ color: 'red' }}>{error}</Text>
-                        <TouchableOpacity onPress={fetchWorkers} style={{ marginTop: 10 }}>
-                            <Text style={{ color: COLORS.primary }}>Retry</Text>
-                        </TouchableOpacity>
-                    </View>
-                ) : (
-                    <FlatList
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        data={workers}
-                        keyExtractor={(item) => item.id}
-                        contentContainerStyle={styles.workersList}
-                        renderItem={({ item }) => (
-                            <WorkerCard
-                                worker={item}
-                                onChat={() => (navigation as any).navigate('Chat', { workerId: item.id })}
-                                onBook={() => (navigation as any).navigate('Booking', { workerId: item.id })}
-                                onPress={() => (navigation as any).navigate('WorkerProfile', { workerId: item.id })}
-                            />
-                        )}
-                        ListEmptyComponent={() => (
-                            <Text style={{ textAlign: 'center', padding: 20, color: COLORS.gray }}>No workers available nearby.</Text>
-                        )}
-                    />
-                )}
-            </View>
+  const renderFeatured = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text variant="h3">Top Rated Workers</Text>
+        <Pressable>
+          <Text variant="bodySmall" color={COLORS.primary} style={{ fontWeight: '700' }}>View More</Text>
+        </Pressable>
+      </View>
+      {loading ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} width={280} height={180} style={{ marginRight: 16, borderRadius: 16 }} />
+          ))}
         </ScrollView>
-    );
+      ) : (
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={workers.slice(0, 5)}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.horizontalList}
+          renderItem={({ item }) => (
+            <WorkerCard
+              worker={item}
+              horizontal
+              onPress={() => (navigation as any).navigate('WorkerProfile', { workerId: item.id })}
+              onBook={() => (navigation as any).navigate('Booking', { workerId: item.id })}
+            />
+          )}
+        />
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[0]}
+      >
+        <View style={{ backgroundColor: COLORS.background }}>
+          {renderHeader()}
+        </View>
+
+        {renderSearch()}
+        {renderCategories()}
+        {renderFeatured()}
+
+        <View style={styles.section}>
+          <Text variant="h3" style={styles.sectionTitle}>Available Nearby</Text>
+          {loading ? (
+            <View style={{ paddingHorizontal: 16 }}>
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} width="100%" height={120} style={{ marginBottom: 16, borderRadius: 16 }} />
+              ))}
+            </View>
+          ) : (
+            <View style={{ paddingHorizontal: 16 }}>
+              {workers.map((item) => (
+                <WorkerCard
+                  key={item.id}
+                  worker={item}
+                  onPress={() => (navigation as any).navigate('WorkerProfile', { workerId: item.id })}
+                  onBook={() => (navigation as any).navigate('Booking', { workerId: item.id })}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: SPACING.md,
-        paddingTop: 40,
-        paddingBottom: SPACING.md,
-    },
-    locationContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: COLORS.white,
-        paddingHorizontal: SPACING.sm,
-        paddingVertical: SPACING.xs,
-        borderRadius: BORDER_RADIUS.md,
-    },
-    locationText: {
-        marginLeft: SPACING.xs,
-        fontSize: 14,
-        fontWeight: '500',
-        color: COLORS.text,
-    },
-    profileBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: COLORS.primary,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    profileBtnText: {
-        color: COLORS.white,
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    searchSection: {
-        paddingHorizontal: SPACING.md,
-        marginBottom: SPACING.lg,
-    },
-    greeting: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: COLORS.text,
-    },
-    subGreeting: {
-        fontSize: 16,
-        color: COLORS.gray,
-        marginBottom: SPACING.md,
-        marginTop: 4,
-    },
-    fakeSearchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: COLORS.white,
-        borderWidth: 1,
-        borderColor: COLORS.border,
-        borderRadius: BORDER_RADIUS.md,
-        paddingHorizontal: SPACING.md,
-        height: 50,
-    },
-    searchIcon: {
-        marginRight: SPACING.sm,
-    },
-    searchText: {
-        color: COLORS.gray,
-        fontSize: 16,
-    },
-    section: {
-        marginBottom: SPACING.lg,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: COLORS.text,
-        paddingHorizontal: SPACING.md,
-        marginBottom: SPACING.md,
-    },
-    categoriesGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        paddingHorizontal: SPACING.md,
-    },
-    workersList: {
-        paddingHorizontal: SPACING.md,
-    },
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.background,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  locationText: {
+    marginLeft: 4,
+    fontWeight: '700',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  badge: {
+    position: 'absolute',
+    top: 10,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.error,
+    borderWidth: 1.5,
+    borderColor: COLORS.white,
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  greeting: {
+    marginBottom: 16,
+    width: '80%',
+  },
+  fakeSearch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 16,
+    height: 54,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  searchText: {
+    marginLeft: 12,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  categoriesList: {
+    paddingHorizontal: 16,
+  },
+  horizontalList: {
+    paddingHorizontal: 16,
+  },
 });

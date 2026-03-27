@@ -5,15 +5,15 @@ import { COLORS, SPACING, BORDER_RADIUS } from '../constants/theme';
 interface InputProps extends TextInputProps {
     label?: string;
     error?: string;
-    icon?: React.ReactNode;
+    leftIcon?: React.ReactNode;
 }
 
-export const Input: React.FC<InputProps> = ({ label, error, icon, style, ...props }) => {
+export const Input: React.FC<InputProps> = ({ label, error, leftIcon, style, ...props }) => {
     return (
         <View style={styles.container}>
             {label && <Text style={styles.label}>{label}</Text>}
             <View style={[styles.inputContainer, error && styles.inputError]}>
-                {icon && <View style={styles.iconContainer}>{icon}</View>}
+                {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
                 <TextInput
                     style={[styles.input, style]}
                     placeholderTextColor={COLORS.gray}
