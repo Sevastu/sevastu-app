@@ -15,24 +15,24 @@ export const ProfileScreen = () => {
     {
       title: 'Account',
       items: [
-        { icon: User, label: 'Edit Profile', onPress: () => {} },
-        { icon: MapPin, label: 'Saved Addresses', onPress: () => {} },
-        { icon: Heart, label: 'My Favorites', onPress: () => {} },
+        { icon: User, label: 'Edit Profile', onPress: () => { } },
+        { icon: MapPin, label: 'Saved Addresses', onPress: () => { } },
+        { icon: Heart, label: 'My Favorites', onPress: () => { } },
         { icon: ShieldCheck, label: 'Security & Password', onPress: () => navigation.navigate('SetPassword' as never) },
       ]
     },
     {
       title: 'Payments & Offers',
       items: [
-        { icon: CreditCard, label: 'Payment Methods', onPress: () => {} },
-        { icon: Bell, label: 'Promotions', onPress: () => {} },
+        { icon: CreditCard, label: 'Payment Methods', onPress: () => { } },
+        { icon: Bell, label: 'Promotions', onPress: () => { } },
       ]
     },
     {
       title: 'Support',
       items: [
-        { icon: HelpCircle, label: 'Help Center', onPress: () => {} },
-        { icon: Settings, label: 'AppSettings', onPress: () => {} },
+        { icon: HelpCircle, label: 'Help Center', onPress: () => { } },
+        { icon: Settings, label: 'AppSettings', onPress: () => { } },
       ]
     }
   ];
@@ -112,7 +112,7 @@ export const ProfileScreen = () => {
             style={styles.logoutBtn}
           />
           <Text variant="bodySmall" color={COLORS.textMuted} align="center" style={{ marginTop: 16 }}>
-            KaamSetu v1.0.4
+            Sevastu v1.0.4
           </Text>
         </View>
       </ScrollView>

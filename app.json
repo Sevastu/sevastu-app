@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "kaamsetu-app",
-    "slug": "kaamsetu-app",
+    "name": "sevastu-app",
+    "slug": "sevastu-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.kaamsetu-app"
+      "bundleIdentifier": "com.anonymous.sevastu-app"
     },
     "android": {
       "adaptiveIcon": {

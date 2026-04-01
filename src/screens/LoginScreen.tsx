@@ -73,7 +73,7 @@ export const LoginScreen = ({ navigation }: any) => {
                 <Text variant="h1" color={COLORS.white}>K</Text>
               </View>
             </View>
-            <Text variant="h1" align="center" style={styles.title}>KaamSetu</Text>
+            <Text variant="h1" align="center" style={styles.title}>Sevastu</Text>
             <Text variant="bodyLarge" align="center" color={COLORS.textMuted} style={styles.subtitle}>
               Premium Home Services at Your Doorstep
             </Text>
@@ -167,7 +167,7 @@ export const LoginScreen = ({ navigation }: any) => {
               title="Google"
               variant="outline"
               style={styles.socialBtn}
-              onPress={() => {}}
+              onPress={() => { }}
               leftIcon={<Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2991/2991148.png' }} style={{ width: 20, height: 20 }} />}
             />
           </View>
