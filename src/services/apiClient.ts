@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Alert } from 'react-native';
 
 const apiClient = axios.create({
-    baseURL: 'https://sevastu-be.vercel.app',
+    baseURL: 'https://sevastu-be.onrender.com',
     headers: {
         'Content-Type': 'application/json',
     },
