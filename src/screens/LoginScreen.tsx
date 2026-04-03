@@ -29,12 +29,24 @@ export const LoginScreen = ({ navigation }: any) => {
       Alert.alert('Error', 'Please enter your phone number');
       return;
     }
+    // Validate: must be 10-digit Indian number starting with 6-9
+    const cleanPhone = phone.trim().replace(/\s+/g, '');
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      Alert.alert('Invalid Number', 'Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8 or 9).');
+      return;
+    }
     setLoading(true);
     try {
-      await authService.sendOtp(phone);
-      navigation.navigate('VerifyOtp', { phone });
-    } catch (error) {
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+      await authService.sendOtp(cleanPhone);
+      navigation.navigate('VerifyOtp', { phone: cleanPhone });
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message ??
+        (Array.isArray(error?.response?.data?.message)
+          ? error.response.data.message.join(', ')
+          : null) ??
+        'Failed to send OTP. Please try again.';
+      Alert.alert('Error', Array.isArray(msg) ? msg.join(', ') : msg);
     } finally {
       setLoading(false);
     }
