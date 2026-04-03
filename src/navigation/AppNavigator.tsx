@@ -14,6 +14,8 @@ import { BookingScreen } from '../screens/BookingScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { VerifyOtpScreen } from '../screens/VerifyOtpScreen';
 import { SetPasswordScreen } from '../screens/SetPasswordScreen';
+import { SplashScreen } from '../screens/SplashScreen';
+import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
 import { COLORS } from '../theme';
 import { View } from 'react-native';
 import { Text } from '../components/ui/Typography';
@@ -98,7 +100,9 @@ function BottomTabs() {
 export function AppNavigator() {
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login">
+            <Stack.Navigator initialRouteName="Splash">
+                <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="RoleSelection" component={RoleSelectionScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="SetPassword" component={SetPasswordScreen} options={{ title: 'Security', headerShadowVisible: false }} />
